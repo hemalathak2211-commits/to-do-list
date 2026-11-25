@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>To-Do List</title>
+<style>
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: #E8F4F8;
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+  }
+  .app { width: 100%; max-width: 500px; text-align: center; }
+  h1 { color: #1F4E5F; font-size: 30px; margin: 20px 0; }
+  #taskInput {
+    width: 100%;
+    box-sizing: border-box;
+    font-size: 17px;
+    padding: 10px;
+    border: 1px solid #333;
+    border-radius: 4px;
+    margin-bottom: 10px;
+  }
+  button {
+    border: none;
+    border-radius: 4px;
+    color: #fff;
+    font-weight: bold;
+    font-size: 14px;
+    padding: 10px 0;
+    width: 180px;
+    margin: 5px auto;
+    display: block;
+    cursor: pointer;
+  }
+  #addBtn { background: #4CAF50; }
+  #addBtn:hover { background: #45A049; }
+  #completeBtn { background: #3498DB; }
+  #completeBtn:hover { background: #2980B9; }
+  #deleteBtn { background: #E74C3C; }
+  #deleteBtn:hover { background: #C0392B; }
+  #clearBtn { background: #F39C12; }
+  #clearBtn:hover { background: #D68910; }
+  #saveBtn { background: #8E44AD; }
+  #saveBtn:hover { background: #71368A; }
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 20px 0;
+    background: #fff;
+    border: 1px solid #333;
+    border-radius: 4px;
+    min-height: 280px;
+    max-height: 340px;
+    overflow-y: auto;
+    text-align: left;
+  }
+  li {
+    padding: 10px 12px;
+    font-size: 17px;
+    color: #333;
+    cursor: pointer;
+  }
+  li.selected { background: #5DADE2; color: #fff; }
+</style>
+</head>
+<body>
+  <div class="app">
+    <h1>TO-DO LIST</h1>
+    <input type="text" id="taskInput" placeholder="Enter a task...">
+    <button id="addBtn" onclick="addTask()">➕ Add Task</button>
+
+    <ul id="taskList"></ul>
+
+    <button id="completeBtn" onclick="completeTask()">✓ Complete</button>
+    <button id="deleteBtn" onclick="deleteTask()">🗑 Delete</button>
+    <button id="clearBtn" onclick="clearTasks()">Clear All</button>
+    <button id="saveBtn" onclick="saveTasks(true)">💾 Save Tasks</button>
+  </div>
+
+<script>
+  const input = document.getElementById('taskInput');
+  const list = document.getElementById('taskList');
+  let tasks = [];
+  let selected = -1;
+
+  function render() {
+    list.innerHTML = '';
+    tasks.forEach((task, i) => {
+      const li = document.createElement('li');
+      li.textContent = task;
+      if (i === selected) li.classList.add('selected');
+      li.onclick = () => { selected = i; render(); };
+      list.appendChild(li);
+    });
+  }
+
+  function addTask() {
+    const task = input.value.trim();
+    if (task === '') {
+      alert('Please enter a task.');
+      return;
+    }
+    tasks.push(task);
+    input.value = '';
+    saveTasks(false);
+    render();
+  }
+
+  function deleteTask() {
+    if (selected < 0) {
+      alert('Please select a task.');
+      return;
+    }
+    tasks.splice(selected, 1);
+    selected = -1;
+    saveTasks(false);
+    render();
+  }
+
+  function completeTask() {
+    if (selected < 0) {
+      alert('Please select a task.');
+      return;
+    }
+    if (!tasks[selected].startsWith('✓ ')) {
+      tasks[selected] = '✓ ' + tasks[selected];
+      saveTasks(false);
+      render();
+    }
+  }
+
+  function clearTasks() {
+    if (tasks.length === 0) return;
+    if (confirm('Are you sure you want to delete all tasks?')) {
+      tasks = [];
+      selected = -1;
+      saveTasks(false);
+      render();
+    }
+  }
+
+  function saveTasks(showMessage) {
+    try {
+      localStorage.setItem('tasks', JSON.stringify(tasks));
+      if (showMessage) alert('Tasks saved successfully!');
+    } catch (e) {
+      if (showMessage) alert('Could not save tasks in this browser.');
+    }
+  }
+
+  function loadTasks() {
+    try {
+      const saved = localStorage.getItem('tasks');
+      if (saved) tasks = JSON.parse(saved);
+    } catch (e) {
+      tasks = [];
+    }
+  }
+
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') addTask();
+  });
+
+  loadTasks();
+  render();
+</script>
+</body>
+</html>
